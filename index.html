@@ -1,0 +1,2462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0ea5e9">
+  <title>WattWise | Energy Bill Modeler & Comparator</title>
+  <style>
+    :root {
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --bg-body: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #f1f5f9;
+      --bg-subtle: #f8fafc;
+      --border-color: #e2e8f0;
+      --border-focus: #0284c7;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-light: #e0f2fe;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --solar: #f59e0b;
+      --solar-light: #fffbeb;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.05);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --nav-height: 64px;
+      --header-height: 58px;
+    }
+
+    [data-theme="dark"] {
+      --bg-body: #090d16;
+      --bg-surface: #131c2e;
+      --bg-surface-elevated: #1e293b;
+      --bg-subtle: #0f172a;
+      --border-color: #243247;
+      --border-focus: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --primary: #38bdf8;
+      --primary-hover: #7dd3fc;
+      --primary-light: rgba(56, 189, 248, 0.12);
+      --success: #4ade80;
+      --success-light: rgba(74, 222, 128, 0.15);
+      --danger: #f87171;
+      --danger-light: rgba(248, 113, 113, 0.15);
+      --warning: #fbbf24;
+      --warning-light: rgba(251, 191, 36, 0.15);
+      --solar: #fbbf24;
+      --solar-light: rgba(251, 191, 36, 0.12);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 8px rgba(0,0,0,0.5);
+      --shadow-lg: 0 10px 20px rgba(0,0,0,0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.45;
+      font-size: 15px;
+      overflow-x: hidden;
+      padding-bottom: calc(var(--nav-height) + 16px);
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      height: var(--header-height);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #0284c7, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .brand-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .icon-btn:active {
+      transform: scale(0.94);
+      background: var(--bg-surface-elevated);
+    }
+
+    main.content-area {
+      flex: 1;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .tab-view {
+      display: none;
+      animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tab-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-subtext {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .input-affix-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-affix {
+      position: absolute;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      pointer-events: none;
+      font-weight: 600;
+    }
+    .input-affix.prefix { left: 12px; }
+    .input-affix.suffix { right: 12px; }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      height: 46px;
+      padding: 0 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background-color: var(--bg-surface);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .has-prefix input { padding-left: 28px; }
+    .has-suffix input { padding-right: 56px; }
+
+    input:focus, select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-5-5h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+
+    .btn {
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s, transform 0.1s, opacity 0.15s;
+      text-decoration: none;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-danger {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    .btn-sm {
+      min-height: 36px;
+      padding: 0 10px;
+      font-size: 0.8rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-height);
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 50;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 600;
+      transition: color 0.15s;
+      padding: 4px 0;
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+      margin-bottom: 3px;
+      stroke-width: 2;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
+    .nav-item.active svg {
+      stroke: var(--primary);
+    }
+
+    .ledger-table-wrap {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-top: 12px;
+      background: var(--bg-surface);
+    }
+
+    .ledger-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      text-align: left;
+    }
+
+    .ledger-table th {
+      background: var(--bg-surface-elevated);
+      color: var(--text-muted);
+      font-weight: 700;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .ledger-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    .ledger-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .ledger-credit {
+      color: var(--success);
+      font-weight: 600;
+    }
+    .ledger-debit {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .ledger-row-detail {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .summary-card {
+      background: linear-gradient(135deg, var(--bg-surface), var(--bg-surface-elevated));
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-top: 16px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.86rem;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+    .summary-row.total-row {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 2px dashed var(--border-color);
+      color: var(--text-main);
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .summary-total-val {
+      color: var(--primary);
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .vs-badge-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 8px 0;
+    }
+    .vs-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.75rem;
+      border: 2px solid var(--bg-surface);
+    }
+
+    .winner-banner {
+      background: var(--success-light);
+      color: var(--success);
+      border: 1px solid var(--success);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .delta-metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .delta-metric-box {
+      background: var(--bg-surface-elevated);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+    .delta-metric-box .metric-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .delta-metric-box .metric-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .bar-chart-wrap {
+      margin-top: 14px;
+    }
+    .bar-chart-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .bar-track {
+      height: 12px;
+      background: var(--bg-surface-elevated);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      display: flex;
+    }
+    .bar-fill {
+      height: 100%;
+      transition: width 0.4s ease;
+    }
+    .bar-a { background: var(--primary); }
+    .bar-b { background: var(--warning); }
+
+    .category-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+    .category-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .category-name-input {
+      font-weight: 700;
+      font-size: 0.88rem;
+      flex: 1;
+      height: 38px;
+    }
+    .nested-tiers-wrap {
+      border-left: 3px solid var(--primary);
+      padding-left: 10px;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tier-row {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      position: relative;
+    }
+    .tier-row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .tier-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-sheet {
+      background: var(--bg-surface);
+      width: 100%;
+      max-width: 580px;
+      max-height: 90vh;
+      border-radius: 20px 20px 0 0;
+      padding: 20px 16px 30px;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border-color);
+      border-radius: var(--radius-full);
+      margin: 0 auto 16px;
+    }
+
+    .badge-chip {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      display: inline-block;
+    }
+    .chip-tou { background: #e0e7ff; color: #4338ca; }
+    .chip-tiered { background: #fef3c7; color: #b45309; }
+    .chip-flat { background: #dcfce7; color: #15803d; }
+    [data-theme="dark"] .chip-tou { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+    [data-theme="dark"] .chip-tiered { background: rgba(245,158,11,0.2); color: #fcd34d; }
+    [data-theme="dark"] .chip-flat { background: rgba(34,197,94,0.2); color: #86efac; }
+
+    .pill-group {
+      display: flex;
+      background: var(--bg-surface-elevated);
+      border-radius: var(--radius-md);
+      padding: 3px;
+      gap: 2px;
+    }
+    .pill-btn {
+      flex: 1;
+      height: 36px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .pill-btn.active {
+      background: var(--bg-surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 28px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: var(--border-color);
+      transition: .2s;
+      border-radius: 28px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    /* Notification banner */
+    .toast-msg {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 120;
+      box-shadow: var(--shadow-lg);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">WattWise</div>
+      </div>
+      <span class="brand-badge">AU Energy</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle theme">
+        <svg id="themeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings and presets">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="content-area">
+
+    <!-- TAB 1: PROVIDERS / PLANS -->
+    <section id="view-plans" class="tab-view active">
+      <div class="card-title-row">
+        <div>
+          <h1 class="card-title" style="font-size:1.15rem;">Energy Plans & Tariffs</h1>
+          <p class="card-subtext">Configure retail tariffs, stepped blocks & daily supply</p>
+        </div>
+        <button class="btn btn-primary btn-sm" id="addNewPlanBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add Plan
+        </button>
+      </div>
+
+      <div id="plansListContainer"></div>
+    </section>
+
+    <!-- TAB 2: USAGE & BILL CALCULATOR -->
+    <section id="view-calculator" class="tab-view">
+      <div class="card">
+        <div class="card-title-row">
+          <h2 class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg>
+            Bill Calculation Setup
+          </h2>
+          <span class="badge-chip chip-tou" id="activePlanTypeBadge">Time of Use</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="calcProviderSelect">Active Plan Profile</label>
+          <select id="calcProviderSelect"></select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="calcBillingDays">Billing Period (Days)</label>
+          <div class="pill-group" style="margin-bottom:8px;">
+            <button type="button" class="pill-btn" onclick="setBillingDays(30)">Monthly (30d)</button>
+            <button type="button" class="pill-btn" onclick="setBillingDays(60)">Bi-Monthly (60d)</button>
+            <button type="button" class="pill-btn active" onclick="setBillingDays(90)">Quarterly (90d)</button>
+          </div>
+          <div class="input-affix-wrapper has-suffix">
+            <input type="number" id="calcBillingDays" min="1" max="366" value="90" inputmode="numeric">
+            <span class="input-affix suffix">Days</span>
+          </div>
+        </div>
+
+        <div id="dynamicUsageInputsContainer">
+          <!-- Populated dynamically based on tariff structure (TOU / Stepped / Flat) -->
+        </div>
+      </div>
+
+      <!-- Itemized Ledger Balance Sheet -->
+      <div class="card">
+        <div class="card-title-row">
+          <div>
+            <h3 class="card-title">Itemized Balance Sheet</h3>
+            <p class="card-subtext">Auditable breakdown of debits, credits & supply</p>
+          </div>
+          <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);" id="calcDailyRateLabel"></span>
+        </div>
+
+        <div class="ledger-table-wrap">
+          <table class="ledger-table">
+            <thead>
+              <tr>
+                <th style="width:42%;">Description</th>
+                <th style="width:20%; text-align:right;">Usage</th>
+                <th style="width:18%; text-align:right;">Rate</th>
+                <th style="width:20%; text-align:right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="ledgerTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Summary Totals -->
+        <div class="summary-card">
+          <div class="summary-row">
+            <span>Energy Consumption Charges</span>
+            <strong id="summaryUsageExTax">$0.00</strong>
+          </div>
+          <div class="summary-row">
+            <span>Daily Service / Supply Charges</span>
+            <strong id="summarySupplyCharges">$0.00</strong>
+          </div>
+          <div class="summary-row" id="summaryCreditsRow">
+            <span class="ledger-credit">Discounts & Credits</span>
+            <strong class="ledger-credit" id="summaryTotalCredits">-$0.00</strong>
+          </div>
+          <div class="summary-row" id="summaryTaxRow">
+            <span>GST / Tax (<span id="summaryTaxPercentLabel">10%</span>)</span>
+            <strong id="summaryTaxAmount">$0.00</strong>
+          </div>
+          <div class="summary-row total-row">
+            <span>Estimated Total Payable</span>
+            <span class="summary-total-val" id="summaryTotalPayable">$0.00</span>
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted); text-align:right; margin-top:4px;">
+            Equivalent: <strong id="summaryCostPerDay">$0.00 / day</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: PLAN COMPARISON -->
+    <section id="view-compare" class="tab-view">
+      <div class="card">
+        <div class="card-title-row">
+          <div>
+            <h2 class="card-title">Side-by-Side Comparison</h2>
+            <p class="card-subtext">Direct cost variance on identical baseline consumption</p>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
+          <div class="form-group">
+            <label class="form-label" for="comparePlanA">Provider Option A</label>
+            <select id="comparePlanA"></select>
+          </div>
+          <div class="vs-badge-container">
+            <div class="vs-circle">VS</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="comparePlanB">Provider Option B</label>
+            <select id="comparePlanB"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Consumption Scenario Card -->
+      <div class="card" style="border-left: 4px solid var(--primary);">
+        <div class="card-title-row">
+          <div>
+            <h3 class="card-title" style="font-size:0.98rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+              Your Energy Consumption Baseline
+            </h3>
+            <p class="card-subtext">Adjust days & consumption to model both plans simultaneously</p>
+          </div>
+        </div>
+
+        <!-- Quick Household Presets -->
+        <div class="form-group">
+          <label class="form-label">Quick Usage Presets</label>
+          <div class="pill-group" style="margin-bottom:8px;">
+            <button type="button" class="pill-btn" onclick="applyUsagePreset('low')">Small (900 kWh)</button>
+            <button type="button" class="pill-btn active" id="presetMedBtn" onclick="applyUsagePreset('med')">Average (1400 kWh)</button>
+            <button type="button" class="pill-btn" onclick="applyUsagePreset('high')">High (2200 kWh)</button>
+          </div>
+        </div>
+
+        <div class="input-row" style="margin-bottom:10px;">
+          <div style="flex:1;">
+            <label class="form-label" for="compareBillingDays">Billing Days</label>
+            <div class="input-affix-wrapper has-suffix">
+              <input type="number" id="compareBillingDays" min="1" max="366" value="90" inputmode="numeric">
+              <span class="input-affix suffix">Days</span>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <label class="form-label" for="compareTotalUsage">Total Consumption</label>
+            <div class="input-affix-wrapper has-suffix">
+              <input type="number" id="compareTotalUsage" min="0" step="any" value="1400" inputmode="decimal">
+              <span class="input-affix suffix" id="compareUnitLabel">kWh</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Time-of-Use split if either compared plan uses TOU -->
+        <div id="compareTouSplitWrap" style="background:var(--bg-surface-elevated); padding:10px 12px; border-radius:var(--radius-md); margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted);">TOU Distribution Split</span>
+            <span style="font-size:0.75rem; color:var(--primary); font-weight:600;" id="compareTouSplitStatus">Auto-divided from total</span>
+          </div>
+          <div class="input-row">
+            <div style="flex:1;">
+              <span style="font-size:0.72rem; color:var(--text-muted); display:block; margin-bottom:3px;">Peak</span>
+              <input type="number" id="comparePeakUsage" min="0" step="any" value="700" inputmode="decimal" style="height:38px; font-size:0.88rem;">
+            </div>
+            <div style="flex:1;">
+              <span style="font-size:0.72rem; color:var(--text-muted); display:block; margin-bottom:3px;">Shoulder</span>
+              <input type="number" id="compareShoulderUsage" min="0" step="any" value="250" inputmode="decimal" style="height:38px; font-size:0.88rem;">
+            </div>
+            <div style="flex:1;">
+              <span style="font-size:0.72rem; color:var(--text-muted); display:block; margin-bottom:3px;">Off-Peak</span>
+              <input type="number" id="compareOffPeakUsage" min="0" step="any" value="450" inputmode="decimal" style="height:38px; font-size:0.88rem;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Winner Badge Callout -->
+      <div id="compareWinnerCard" class="winner-banner">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+        <div style="flex:1;">
+          <div style="font-size:0.75rem; text-transform:uppercase; font-weight:800; letter-spacing:0.04em;">Cheaper Plan Recommendation</div>
+          <div style="font-size:1.05rem; font-weight:800;" id="compareWinnerName">Plan A</div>
+          <div style="font-size:0.82rem;" id="compareSavingsText">Saves $45.20 (12.4%) over this billing period</div>
+        </div>
+      </div>
+
+      <!-- Visual Differential Bar -->
+      <div class="card">
+        <h3 class="card-title" style="font-size:0.95rem;">Bill Proportions</h3>
+        <div class="bar-chart-wrap">
+          <div class="bar-chart-label">
+            <span id="chartLabelA">Plan A ($0.00)</span>
+            <span id="chartLabelB">Plan B ($0.00)</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill bar-a" id="chartBarA" style="width: 50%;"></div>
+            <div class="bar-fill bar-b" id="chartBarB" style="width: 50%;"></div>
+          </div>
+        </div>
+
+        <!-- Delta Breakdown Metrics -->
+        <div class="delta-metric-grid">
+          <div class="delta-metric-box">
+            <div class="metric-label">Supply Delta</div>
+            <div class="metric-val" id="diffSupply">$0.00</div>
+          </div>
+          <div class="delta-metric-box">
+            <div class="metric-label">Usage Delta</div>
+            <div class="metric-val" id="diffUsage">$0.00</div>
+          </div>
+          <div class="delta-metric-box">
+            <div class="metric-label">Discounts Delta</div>
+            <div class="metric-val" id="diffDiscounts">$0.00</div>
+          </div>
+          <div class="delta-metric-box">
+            <div class="metric-label">Net Variance</div>
+            <div class="metric-val" id="diffTotal" style="color:var(--primary);">$0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison Detailed Table -->
+      <div class="card">
+        <h3 class="card-title" style="font-size:0.95rem; margin-bottom:10px;">Component Breakdown</h3>
+        <div class="ledger-table-wrap">
+          <table class="ledger-table">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th style="text-align:right;" id="thPlanAName">Plan A</th>
+                <th style="text-align:right;" id="thPlanBName">Plan B</th>
+              </tr>
+            </thead>
+            <tbody id="compareTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="plans">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      <span>Plans</span>
+    </button>
+    <button class="nav-item" data-tab="calculator">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg>
+      <span>Calculator</span>
+    </button>
+    <button class="nav-item" data-tab="compare">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      <span>Compare</span>
+    </button>
+  </nav>
+
+  <!-- Plan Edit / Create Modal -->
+  <div class="modal-backdrop" id="planModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="card-title-row">
+        <h3 class="card-title" id="modalPlanTitle">Edit Energy Plan</h3>
+        <button class="icon-btn" onclick="closePlanModal()" style="border:none; width:36px; height:36px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="planForm" onsubmit="handleSavePlan(event)">
+        <input type="hidden" id="editPlanId">
+
+        <div class="form-group">
+          <label class="form-label" for="planProviderName">Retailer / Provider Name</label>
+          <input type="text" id="planProviderName" required placeholder="e.g. Origin, AGL, Alinta">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="planName">Plan / Offer Title</label>
+          <input type="text" id="planName" required placeholder="e.g. Home Flexi Saver, Basic Home">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="planEnergyType">Energy Unit</label>
+          <select id="planEnergyType" onchange="handleEnergyTypeChange()">
+            <option value="kWh">Electricity (kWh)</option>
+            <option value="MJ">Gas (MJ - MegaJoules)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Daily Service / Supply Charge</label>
+          <div class="input-row">
+            <div class="input-affix-wrapper has-suffix">
+              <input type="number" id="planSupplyCharge" step="any" min="0" required inputmode="decimal">
+              <span class="input-affix suffix" id="supplyUnitLabel">¢/day</span>
+            </div>
+            <select id="planSupplyUnit" style="width:110px;" onchange="handleSupplyUnitChange()">
+              <option value="cents">¢/day</option>
+              <option value="dollars">$/day</option>
+            </select>
+          </div>
+          <span style="font-size:0.72rem; color:var(--text-muted); margin-top:3px; display:block;">Victorian Energy default is approx 64.26¢ - 125.0¢/day</span>
+        </div>
+
+        <!-- Tariff Structure: Hierarchical Periods with Nested Steps -->
+        <div class="form-group" style="border-top:1px solid var(--border-color); padding-top:14px; margin-top:14px;">
+          <div class="card-title-row" style="margin-bottom:6px; align-items:flex-start;">
+            <div>
+              <label class="form-label" style="margin-bottom:2px;">Tariff Periods & Stepped Tiers</label>
+              <div style="font-size:0.75rem; color:var(--text-muted);">
+                Add time periods (Peak, Off-Peak) with optional nested daily steps
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="addNewCategoryRow()">
+              + Add Period
+            </button>
+          </div>
+
+          <!-- Quick Templates -->
+          <div style="margin-bottom:12px;">
+            <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Quick Templates:</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;">
+              <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:4px 8px; min-height:30px;" onclick="loadPlanTemplate('alinta_gas')">Alinta Gas (Peak & Off-Peak Stepped)</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:4px 8px; min-height:30px;" onclick="loadPlanTemplate('vic_gas')">Vic Compare Gas (100 MJ/day)</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:4px 8px; min-height:30px;" onclick="loadPlanTemplate('tou')">Electricity TOU (Peak/Off-Peak)</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:4px 8px; min-height:30px;" onclick="loadPlanTemplate('flat')">Single Flat Rate</button>
+            </div>
+          </div>
+
+          <div id="tariffCategoriesWrap">
+            <!-- Dynamic Hierarchical Structure Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Discounts & Credits -->
+        <div style="border-top:1px solid var(--border-color); padding-top:12px; margin-top:12px;">
+          <div class="form-group">
+            <label class="form-label" for="planDiscountPercent">Guaranteed Discount (% on Usage)</label>
+            <div class="input-affix-wrapper has-suffix">
+              <input type="number" id="planDiscountPercent" step="any" min="0" max="100" value="0" inputmode="decimal">
+              <span class="input-affix suffix">%</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="planBillCredit">Fixed Bill Credit ($ per Bill)</label>
+            <div class="input-affix-wrapper has-prefix">
+              <span class="input-affix prefix">$</span>
+              <input type="number" id="planBillCredit" step="any" min="0" value="0" inputmode="decimal">
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div style="font-size:0.88rem; font-weight:600;">Includes 10% GST</div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">Standard retail energy offers in AU include GST</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="planTaxToggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button type="button" class="btn btn-secondary btn-block" onclick="closePlanModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-block">Save Plan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Settings / Reset Modal -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="card-title-row">
+        <h3 class="card-title">Settings & Storage</h3>
+        <button class="icon-btn" onclick="closeSettingsModal()" style="border:none; width:36px; height:36px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+          WattWise stores your tariff models, consumption inputs, and theme selections offline in your browser's local storage.
+        </p>
+
+        <button class="btn btn-secondary btn-block" style="margin-bottom:10px;" onclick="promptResetDefaults()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v6h6"></path><path d="M21 12A9 9 0 0 0 6 5.3L3 8"></path><path d="M21 22v-6h-6"></path><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"></path></svg>
+          Reset to Default Victorian & AU Plans
+        </button>
+
+        <button class="btn btn-danger btn-block" onclick="promptClearAllData()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Clear All Saved Data
+        </button>
+      </div>
+
+      <div style="font-size:0.75rem; color:var(--text-dim); text-align:center;">
+        Version 2.4 • Client-Side Australian Tariff Modeler
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Dialog Modal -->
+  <div class="modal-backdrop" id="confirmModal">
+    <div class="modal-sheet" style="max-width:440px;">
+      <div class="modal-handle"></div>
+      <h3 class="card-title" id="confirmModalTitle">Are you sure?</h3>
+      <p style="font-size:0.86rem; color:var(--text-muted); margin:10px 0 18px;" id="confirmModalMessage">This action cannot be undone.</p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-secondary btn-block" onclick="resolveConfirm(false)">Cancel</button>
+        <button class="btn btn-danger btn-block" id="confirmModalActionBtn" onclick="resolveConfirm(true)">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-msg" id="toastMsg">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span id="toastText">Plan saved successfully</span>
+  </div>
+
+  <script>
+    const STORAGE_KEY_PLANS = 'wattwise_plans_v2';
+    const STORAGE_KEY_CALC = 'wattwise_calc_inputs_v2';
+    const STORAGE_KEY_THEME = 'wattwise_theme';
+
+    // Realistic Australian default energy tariffs (combining TOU periods with nested stepped daily blocks)
+    const DEFAULT_PLANS = [
+      {
+        id: 'plan-alinta-gas',
+        provider: 'Alinta Energy',
+        name: 'HomeDeal Smart Gas (Multinet)',
+        energyType: 'MJ',
+        supplyCharge: 64.262, // ¢/day (Matching user PDF contract)
+        supplyUnit: 'cents',
+        solarFiT: 0,
+        discountPercent: 0,
+        fixedCredit: 0,
+        includesGST: true,
+        categories: [
+          {
+            id: 'cat-peak',
+            name: 'Peak Usage (1 May to 31 October)',
+            tiers: [
+              { name: 'First 50 MJ/Day', thresholdPerDay: 50, rate: 3.201 },
+              { name: 'Next 50 MJ/Day', thresholdPerDay: 50, rate: 2.838 },
+              { name: 'Remaining Balance', thresholdPerDay: null, rate: 2.222 }
+            ]
+          },
+          {
+            id: 'cat-offpeak',
+            name: 'Off Peak Usage (All Other Times)',
+            tiers: [
+              { name: 'First 50 MJ/Day', thresholdPerDay: 50, rate: 3.080 },
+              { name: 'Next 50 MJ/Day', thresholdPerDay: 50, rate: 2.706 },
+              { name: 'Remaining Balance', thresholdPerDay: null, rate: 2.222 }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'plan-vic-compare-gas',
+        provider: 'Victorian Gas Benchmark',
+        name: 'Compare Energy Vic Stepped',
+        energyType: 'MJ',
+        supplyCharge: 75.90, // ¢/day (Matching user screenshot)
+        supplyUnit: 'cents',
+        solarFiT: 0,
+        discountPercent: 0,
+        fixedCredit: 0,
+        includesGST: true,
+        categories: [
+          {
+            id: 'cat-gen-gas',
+            name: 'General Usage (Per Day)',
+            tiers: [
+              { name: 'First 100 MJ', thresholdPerDay: 100, rate: 2.60 },
+              { name: 'Remaining MJ', thresholdPerDay: null, rate: 2.36 }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'plan-elec-tou-stepped',
+        provider: 'Origin Energy',
+        name: 'Flexi TOU & Stepped Peak',
+        energyType: 'kWh',
+        supplyCharge: 115.5, // ¢/day
+        supplyUnit: 'cents',
+        solarFiT: 0,
+        discountPercent: 0,
+        fixedCredit: 0,
+        includesGST: true,
+        categories: [
+          {
+            id: 'cat-elec-peak',
+            name: 'Peak Hours (3pm - 9pm)',
+            tiers: [
+              { name: 'First 8 kWh/day', thresholdPerDay: 8, rate: 34.5 },
+              { name: 'Peak Balance', thresholdPerDay: null, rate: 42.0 }
+            ]
+          },
+          {
+            id: 'cat-elec-offpeak',
+            name: 'Off-Peak Hours (All Other Times)',
+            tiers: [
+              { name: 'Off-Peak Rate', thresholdPerDay: null, rate: 22.4 }
+            ]
+          }
+        ]
+      }
+    ];
+
+    const DEFAULT_CALC_INPUTS = {
+      planId: 'plan-alinta-gas',
+      billingDays: 60,
+      totalUsage: 3500,
+      categoryUsages: {
+        'cat-peak': 2000,
+        'cat-offpeak': 1500
+      },
+      comparePlanAId: 'plan-alinta-gas',
+      comparePlanBId: 'plan-vic-compare-gas'
+    };
+
+    let appState = {
+      plans: [],
+      calc: { ...DEFAULT_CALC_INPUTS },
+      currentTab: 'plans',
+      theme: 'light'
+    };
+
+    let confirmResolveCallback = null;
+
+    function initAppState() {
+      // 1. Theme loading
+      const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
+      if (savedTheme) {
+        appState.theme = savedTheme;
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        appState.theme = 'dark';
+      } else {
+        appState.theme = 'light';
+      }
+      applyTheme(appState.theme);
+
+      // 2. Plans loading
+      try {
+        const storedPlans = localStorage.getItem(STORAGE_KEY_PLANS);
+        appState.plans = storedPlans ? JSON.parse(storedPlans) : JSON.parse(JSON.stringify(DEFAULT_PLANS));
+      } catch (err) {
+        console.error("Error reading saved plans:", err);
+        appState.plans = JSON.parse(JSON.stringify(DEFAULT_PLANS));
+      }
+
+      // 3. Calculator state loading
+      try {
+        const storedCalc = localStorage.getItem(STORAGE_KEY_CALC);
+        if (storedCalc) {
+          appState.calc = { ...DEFAULT_CALC_INPUTS, ...JSON.parse(storedCalc) };
+        }
+      } catch (err) {
+        console.error("Error reading saved calc state:", err);
+      }
+
+      // Ensure valid plan IDs
+      if (!appState.plans.find(p => p.id === appState.calc.planId) && appState.plans.length > 0) {
+        appState.calc.planId = appState.plans[0].id;
+      }
+      if (!appState.plans.find(p => p.id === appState.calc.comparePlanAId) && appState.plans.length > 0) {
+        appState.calc.comparePlanAId = appState.plans[0].id;
+      }
+      if (!appState.plans.find(p => p.id === appState.calc.comparePlanBId) && appState.plans.length > 1) {
+        appState.calc.comparePlanBId = appState.plans[1].id;
+      } else if (appState.plans.length > 0) {
+        appState.calc.comparePlanBId = appState.plans[0].id;
+      }
+
+      saveAllState();
+    }
+
+    function saveAllState() {
+      try {
+        localStorage.setItem(STORAGE_KEY_PLANS, JSON.stringify(appState.plans));
+        localStorage.setItem(STORAGE_KEY_CALC, JSON.stringify(appState.calc));
+        localStorage.setItem(STORAGE_KEY_THEME, appState.theme);
+      } catch (err) {
+        console.warn("Could not save to localStorage:", err);
+      }
+    }
+
+    function applyTheme(theme) {
+      appState.theme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      const icon = document.getElementById('themeIcon');
+      if (theme === 'dark') {
+        icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+      } else {
+        icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+      }
+      saveAllState();
+    }
+
+    document.getElementById('themeToggleBtn').addEventListener('click', () => {
+      applyTheme(appState.theme === 'dark' ? 'light' : 'dark');
+    });
+
+    function showToast(message) {
+      const toast = document.getElementById('toastMsg');
+      const text = document.getElementById('toastText');
+      text.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2600);
+    }
+
+    /* Custom Confirm Dialog without using native confirm() */
+    function askConfirmation(title, message, confirmBtnText = 'Confirm') {
+      return new Promise((resolve) => {
+        confirmResolveCallback = resolve;
+        document.getElementById('confirmModalTitle').textContent = title;
+        document.getElementById('confirmModalMessage').textContent = message;
+        document.getElementById('confirmModalActionBtn').textContent = confirmBtnText;
+        document.getElementById('confirmModal').classList.add('active');
+      });
+    }
+
+    function resolveConfirm(result) {
+      document.getElementById('confirmModal').classList.remove('active');
+      if (confirmResolveCallback) {
+        confirmResolveCallback(result);
+        confirmResolveCallback = null;
+      }
+    }
+
+    const navItems = document.querySelectorAll('.nav-item');
+    const tabViews = document.querySelectorAll('.tab-view');
+
+    function switchTab(tabId) {
+      appState.currentTab = tabId;
+      navItems.forEach(item => {
+        item.classList.toggle('active', item.dataset.tab === tabId);
+      });
+      tabViews.forEach(view => {
+        view.classList.toggle('active', view.id === `view-${tabId}`);
+      });
+
+      if (tabId === 'plans') {
+        renderPlansList();
+      } else if (tabId === 'calculator') {
+        syncCalculatorView();
+      } else if (tabId === 'compare') {
+        syncCompareView();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        switchTab(item.dataset.tab);
+      });
+    });
+
+    /**
+     * Calculates the full financial balance sheet for a provider against specified usage parameters.
+     * Supports hierarchical categories/time-of-use with nested stepped daily block tiers.
+     */
+    function calculateBill(plan, params) {
+      if (!plan) return null;
+
+      const days = Math.max(1, Number(params.billingDays) || 1);
+      const unit = plan.energyType || 'kWh';
+      const isDollarsSupply = plan.supplyUnit === 'dollars';
+      
+      // Daily supply charge
+      const dailySupplyDollarRate = isDollarsSupply ? Number(plan.supplyCharge) : (Number(plan.supplyCharge) / 100);
+      const totalSupplyCost = dailySupplyDollarRate * days;
+
+      const lineItems = [];
+      let totalUsageCost = 0;
+      let totalKWhOrUnits = 0;
+
+      // 1. Line item: Supply Charge
+      lineItems.push({
+        type: 'supply',
+        desc: `Daily Supply Charge (${days} days)`,
+        detail: `$${dailySupplyDollarRate.toFixed(4)}/day`,
+        units: days,
+        unitLabel: 'Days',
+        rateDisplay: `$${dailySupplyDollarRate.toFixed(3)}/d`,
+        amount: totalSupplyCost,
+        isCredit: false
+      });
+
+      // 2. Line items: Hierarchical categories with nested stepped blocks
+      const categories = plan.categories || [];
+      const catUsages = params.categoryUsages || {};
+
+      categories.forEach((cat, catIdx) => {
+        // Find usage assigned to this category
+        let allocatedUnits = 0;
+        if (catUsages[cat.id] !== undefined && catUsages[cat.id] !== null) {
+          allocatedUnits = Math.max(0, Number(catUsages[cat.id]) || 0);
+        } else if (categories.length === 1) {
+          allocatedUnits = Math.max(0, Number(params.totalUsage) || 0);
+        } else {
+          // If distributed from total, allocate evenly as fallback
+          const total = Math.max(0, Number(params.totalUsage) || 0);
+          allocatedUnits = total / categories.length;
+        }
+
+        totalKWhOrUnits += allocatedUnits;
+        let remainingUnits = allocatedUnits;
+        const tiers = cat.tiers || [];
+
+        tiers.forEach((tier, tierIdx) => {
+          if (remainingUnits <= 0 && tierIdx > 0) return;
+
+          const rateDollars = Number(tier.rate || 0) / 100;
+          let tierUnits = 0;
+
+          if (tier.thresholdPerDay !== null && tier.thresholdPerDay !== undefined && tier.thresholdPerDay > 0) {
+            const periodBlockLimit = Number(tier.thresholdPerDay) * days;
+            tierUnits = Math.min(remainingUnits, periodBlockLimit);
+            remainingUnits -= tierUnits;
+          } else {
+            // Balance tier
+            tierUnits = remainingUnits;
+            remainingUnits = 0;
+          }
+
+          const tierCost = tierUnits * rateDollars;
+          totalUsageCost += tierCost;
+
+          const catPrefix = categories.length > 1 ? `${cat.name} — ` : '';
+          const capDesc = tier.thresholdPerDay ? ` (cap: ${(tier.thresholdPerDay * days).toFixed(0)} ${unit} total / ${tier.thresholdPerDay} ${unit}/d)` : ' (balance)';
+
+          lineItems.push({
+            type: 'usage',
+            desc: `${catPrefix}${tier.name}`,
+            detail: `${Number(tier.rate).toFixed(3)}¢/${unit}${capDesc}`,
+            units: tierUnits,
+            unitLabel: unit,
+            rateDisplay: `$${rateDollars.toFixed(4)}`,
+            amount: tierCost,
+            isCredit: false
+          });
+        });
+      });
+
+      // 3. Line items: Credits & Discounts
+      let totalCredits = 0;
+
+      // Percentage discount
+      const discountPct = Number(plan.discountPercent) || 0;
+      let discountAmount = 0;
+      if (discountPct > 0 && totalUsageCost > 0) {
+        discountAmount = totalUsageCost * (discountPct / 100);
+        totalCredits += discountAmount;
+        lineItems.push({
+          type: 'discount',
+          desc: `Usage Discount (${discountPct}%)`,
+          detail: `${discountPct}% off total consumption charges`,
+          units: 1,
+          unitLabel: 'ea',
+          rateDisplay: `-${discountPct}%`,
+          amount: -discountAmount,
+          isCredit: true
+        });
+      }
+
+      // Fixed bill credit
+      const fixedCredit = Number(plan.fixedCredit) || 0;
+      if (fixedCredit > 0) {
+        totalCredits += fixedCredit;
+        lineItems.push({
+          type: 'discount',
+          desc: 'Guaranteed Bill Credit',
+          detail: 'Fixed credit per billing period',
+          units: 1,
+          unitLabel: 'ea',
+          rateDisplay: `-$${fixedCredit.toFixed(2)}`,
+          amount: -fixedCredit,
+          isCredit: true
+        });
+      }
+
+      // Net total and GST
+      const subtotalNet = Math.max(0, totalSupplyCost + totalUsageCost - totalCredits);
+      let taxAmount = 0;
+      let totalPayable = subtotalNet;
+
+      if (plan.includesGST) {
+        taxAmount = totalPayable * (1 / 11);
+      } else {
+        taxAmount = subtotalNet * 0.10;
+        totalPayable = subtotalNet + taxAmount;
+      }
+
+      return {
+        plan,
+        days,
+        totalKWhOrUnits,
+        totalSupplyCost,
+        totalUsageCost,
+        totalCredits,
+        taxAmount,
+        totalPayable,
+        dailyCost: totalPayable / days,
+        lineItems
+      };
+    }
+
+    function renderPlansList() {
+      const container = document.getElementById('plansListContainer');
+      if (appState.plans.length === 0) {
+        container.innerHTML = `
+          <div class="card" style="text-align:center; padding:32px 16px;">
+            <p style="color:var(--text-muted); margin-bottom:12px;">No energy plans configured yet.</p>
+            <button class="btn btn-primary" onclick="openPlanModal()">Create First Plan</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = appState.plans.map(p => {
+        const categories = p.categories || [];
+        const supplyDisplay = p.supplyUnit === 'dollars' ? `$${Number(p.supplyCharge).toFixed(2)}/day` : `${Number(p.supplyCharge).toFixed(3)}¢/day`;
+
+        const structureSummary = categories.map(c => {
+          const stepSummary = (c.tiers || []).map(t => `${t.name}: ${Number(t.rate).toFixed(3)}¢`).join(', ');
+          return `<div><strong>${escapeHtml(c.name)}</strong>: <span style="color:var(--text-muted); font-size:0.78rem;">${stepSummary}</span></div>`;
+        }).join('');
+
+        return `
+          <div class="card">
+            <div class="card-title-row">
+              <div>
+                <span class="badge-chip chip-tou" style="margin-bottom:4px;">${categories.length} Period${categories.length > 1 ? 's' : ''} (${p.energyType || 'kWh'})</span>
+                <h2 class="card-title" style="font-size:1.05rem;">${escapeHtml(p.provider)}</h2>
+                <div style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">${escapeHtml(p.name)}</div>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button class="icon-btn" style="width:36px; height:36px;" onclick="editPlan('${p.id}')" title="Edit Plan">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                </button>
+                <button class="icon-btn" style="width:36px; height:36px; color:var(--danger);" onclick="deletePlan('${p.id}')" title="Delete Plan">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <div style="background:var(--bg-surface-elevated); padding:10px 12px; border-radius:var(--radius-md); font-size:0.82rem; margin-top:8px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span style="color:var(--text-muted);">Daily Supply:</span>
+                <strong>${supplyDisplay}</strong>
+              </div>
+              <div style="margin-bottom:6px;">
+                <span style="color:var(--text-muted); display:block; margin-bottom:2px;">Tariff Periods & Stepped Tiers:</span>
+                <div style="padding-left:6px; border-left:2px solid var(--border-color);">${structureSummary}</div>
+              </div>
+              ${p.discountPercent > 0 ? `
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span style="color:var(--text-muted);">Usage Discount:</span>
+                  <strong style="color:var(--success);">${p.discountPercent}% OFF</strong>
+                </div>
+              ` : ''}
+              ${p.fixedCredit > 0 ? `
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-muted);">Bill Credit:</span>
+                  <strong style="color:var(--success);">$${p.fixedCredit}</strong>
+                </div>
+              ` : ''}
+            </div>
+
+            <div style="margin-top:12px; display:flex; gap:8px;">
+              <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="selectAndCalculate('${p.id}')">
+                Calculate Bill
+              </button>
+              <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="selectAndCompare('${p.id}')">
+                Compare
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    let currentModalCategories = [];
+
+    function openPlanModal(planToEdit = null) {
+      const modal = document.getElementById('planModal');
+      const form = document.getElementById('planForm');
+      form.reset();
+
+      if (planToEdit) {
+        document.getElementById('modalPlanTitle').textContent = 'Edit Energy Plan';
+        document.getElementById('editPlanId').value = planToEdit.id;
+        document.getElementById('planProviderName').value = planToEdit.provider;
+        document.getElementById('planName').value = planToEdit.name;
+        document.getElementById('planEnergyType').value = planToEdit.energyType || 'kWh';
+        document.getElementById('planSupplyCharge').value = planToEdit.supplyCharge;
+        document.getElementById('planSupplyUnit').value = planToEdit.supplyUnit || 'cents';
+        document.getElementById('planDiscountPercent').value = planToEdit.discountPercent || 0;
+        document.getElementById('planBillCredit').value = planToEdit.fixedCredit || 0;
+        document.getElementById('planTaxToggle').checked = planToEdit.includesGST !== false;
+        
+        currentModalCategories = JSON.parse(JSON.stringify(planToEdit.categories || []));
+      } else {
+        document.getElementById('modalPlanTitle').textContent = 'Add Energy Plan';
+        document.getElementById('editPlanId').value = '';
+        document.getElementById('planEnergyType').value = 'MJ';
+        document.getElementById('planSupplyCharge').value = '64.262';
+        document.getElementById('planSupplyUnit').value = 'cents';
+        document.getElementById('planDiscountPercent').value = '0';
+        document.getElementById('planBillCredit').value = '0';
+        document.getElementById('planTaxToggle').checked = true;
+
+        // Default to Alinta-style 2-period stepped structure
+        loadPlanTemplate('alinta_gas', false);
+      }
+
+      handleSupplyUnitChange();
+      renderModalCategories();
+      modal.classList.add('active');
+    }
+
+    function handleEnergyTypeChange() {
+      renderModalCategories();
+    }
+
+    function loadPlanTemplate(templateName, reRender = true) {
+      const unit = document.getElementById('planEnergyType').value;
+      if (templateName === 'alinta_gas') {
+        document.getElementById('planEnergyType').value = 'MJ';
+        currentModalCategories = [
+          {
+            id: `cat_${Date.now()}_1`,
+            name: 'Peak Usage (1 May to 31 October)',
+            tiers: [
+              { name: 'First 50 MJ/Day', thresholdPerDay: 50, rate: 3.201 },
+              { name: 'Next 50 MJ/Day', thresholdPerDay: 50, rate: 2.838 },
+              { name: 'Remaining Balance', thresholdPerDay: null, rate: 2.222 }
+            ]
+          },
+          {
+            id: `cat_${Date.now()}_2`,
+            name: 'Off Peak Usage (All Other Times)',
+            tiers: [
+              { name: 'First 50 MJ/Day', thresholdPerDay: 50, rate: 3.080 },
+              { name: 'Next 50 MJ/Day', thresholdPerDay: 50, rate: 2.706 },
+              { name: 'Remaining Balance', thresholdPerDay: null, rate: 2.222 }
+            ]
+          }
+        ];
+      } else if (templateName === 'vic_gas') {
+        document.getElementById('planEnergyType').value = 'MJ';
+        currentModalCategories = [
+          {
+            id: `cat_${Date.now()}_1`,
+            name: 'General Usage (Per Day)',
+            tiers: [
+              { name: 'First 100 MJ', thresholdPerDay: 100, rate: 2.60 },
+              { name: 'Remaining MJ', thresholdPerDay: null, rate: 2.36 }
+            ]
+          }
+        ];
+      } else if (templateName === 'tou') {
+        document.getElementById('planEnergyType').value = 'kWh';
+        currentModalCategories = [
+          {
+            id: `cat_${Date.now()}_1`,
+            name: 'Peak Period',
+            tiers: [{ name: 'Peak Rate', thresholdPerDay: null, rate: 38.2 }]
+          },
+          {
+            id: `cat_${Date.now()}_2`,
+            name: 'Off-Peak Period',
+            tiers: [{ name: 'Off-Peak Rate', thresholdPerDay: null, rate: 22.4 }]
+          }
+        ];
+      } else if (templateName === 'stepped_single') {
+        currentModalCategories = [
+          {
+            id: `cat_${Date.now()}_1`,
+            name: 'General Stepped Usage',
+            tiers: [
+              { name: `First 10 ${unit}/day`, thresholdPerDay: 10, rate: 28.5 },
+              { name: 'Remaining Balance', thresholdPerDay: null, rate: 34.0 }
+            ]
+          }
+        ];
+      } else {
+        // Flat
+        currentModalCategories = [
+          {
+            id: `cat_${Date.now()}_1`,
+            name: 'All Day Usage',
+            tiers: [{ name: 'Flat Rate', thresholdPerDay: null, rate: 29.5 }]
+          }
+        ];
+      }
+
+      if (reRender) renderModalCategories();
+    }
+
+    function renderModalCategories() {
+      const container = document.getElementById('tariffCategoriesWrap');
+      const unit = document.getElementById('planEnergyType').value;
+      container.innerHTML = '';
+
+      currentModalCategories.forEach((cat, catIdx) => {
+        const catCard = document.createElement('div');
+        catCard.className = 'category-card';
+        catCard.innerHTML = `
+          <div class="category-card-header">
+            <span class="badge-chip chip-tou">Period ${catIdx + 1}</span>
+            <input type="text" class="category-name-input" value="${escapeHtml(cat.name)}" placeholder="Period Name (e.g. Peak / Off-Peak)" oninput="updateCategoryName(${catIdx}, this.value)">
+            ${currentModalCategories.length > 1 ? `
+              <button type="button" class="icon-btn" style="width:32px; height:32px; color:var(--danger);" onclick="removeCategory(${catIdx})" title="Remove Period">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            ` : ''}
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Nested Daily Steps / Rates</span>
+            <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:2px 8px; min-height:28px;" onclick="addTierToCategory(${catIdx})">
+              + Add Step / Tier
+            </button>
+          </div>
+
+          <div class="nested-tiers-wrap" id="cat_tiers_${catIdx}">
+            ${cat.tiers.map((t, tIdx) => `
+              <div class="tier-row">
+                <div class="tier-row-header">
+                  <span class="tier-tag">Step ${tIdx + 1}</span>
+                  ${cat.tiers.length > 1 ? `
+                    <button type="button" class="icon-btn" style="width:26px; height:26px; border:none;" onclick="removeTierFromCategory(${catIdx}, ${tIdx})">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                  ` : ''}
+                </div>
+                <div class="input-row" style="margin-bottom:6px;">
+                  <input type="text" placeholder="Tier Name (e.g. First 50 MJ/Day)" value="${escapeHtml(t.name)}" style="height:36px; font-size:0.85rem;" oninput="updateTierField(${catIdx}, ${tIdx}, 'name', this.value)">
+                  <div class="input-affix-wrapper has-suffix" style="flex:1;">
+                    <input type="number" step="any" min="0" placeholder="Rate" value="${t.rate}" style="height:36px; font-size:0.85rem;" inputmode="decimal" oninput="updateTierField(${catIdx}, ${tIdx}, 'rate', this.value)">
+                    <span class="input-affix suffix">¢/${unit}</span>
+                  </div>
+                </div>
+                <div class="input-affix-wrapper has-suffix">
+                  <input type="number" step="any" min="0" placeholder="Daily Cap (leave blank for balance)" value="${t.thresholdPerDay !== null && t.thresholdPerDay !== undefined ? t.thresholdPerDay : ''}" style="height:36px; font-size:0.85rem;" inputmode="decimal" oninput="updateTierField(${catIdx}, ${tIdx}, 'thresholdPerDay', this.value)">
+                  <span class="input-affix suffix">${unit}/day</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(catCard);
+      });
+    }
+
+    function addNewCategoryRow() {
+      const unit = document.getElementById('planEnergyType').value;
+      currentModalCategories.push({
+        id: `cat_${Date.now()}_${Math.floor(Math.random()*1000)}`,
+        name: `Period ${currentModalCategories.length + 1}`,
+        tiers: [
+          { name: `All Usage`, thresholdPerDay: null, rate: 25.0 }
+        ]
+      });
+      renderModalCategories();
+    }
+
+    function removeCategory(catIdx) {
+      currentModalCategories.splice(catIdx, 1);
+      renderModalCategories();
+    }
+
+    function updateCategoryName(catIdx, val) {
+      if (currentModalCategories[catIdx]) {
+        currentModalCategories[catIdx].name = val;
+      }
+    }
+
+    function addTierToCategory(catIdx) {
+      const unit = document.getElementById('planEnergyType').value;
+      if (currentModalCategories[catIdx]) {
+        currentModalCategories[catIdx].tiers.push({
+          name: `Next Step`,
+          thresholdPerDay: null,
+          rate: 22.0
+        });
+        renderModalCategories();
+      }
+    }
+
+    function removeTierFromCategory(catIdx, tIdx) {
+      if (currentModalCategories[catIdx] && currentModalCategories[catIdx].tiers.length > 1) {
+        currentModalCategories[catIdx].tiers.splice(tIdx, 1);
+        renderModalCategories();
+      }
+    }
+
+    function updateTierField(catIdx, tIdx, field, val) {
+      if (currentModalCategories[catIdx] && currentModalCategories[catIdx].tiers[tIdx]) {
+        if (field === 'rate') {
+          currentModalCategories[catIdx].tiers[tIdx].rate = parseFloat(val) || 0;
+        } else if (field === 'thresholdPerDay') {
+          currentModalCategories[catIdx].tiers[tIdx].thresholdPerDay = val.trim() !== '' ? (parseFloat(val) || 0) : null;
+        } else {
+          currentModalCategories[catIdx].tiers[tIdx][field] = val;
+        }
+      }
+    }
+
+    /* Handle Plan Save */
+    function handleSavePlan(e) {
+      e.preventDefault();
+      const id = document.getElementById('editPlanId').value || `plan-${Date.now()}`;
+      const provider = document.getElementById('planProviderName').value.trim();
+      const name = document.getElementById('planName').value.trim();
+      const energyType = document.getElementById('planEnergyType').value;
+      const supplyCharge = parseFloat(document.getElementById('planSupplyCharge').value) || 0;
+      const supplyUnit = document.getElementById('planSupplyUnit').value;
+      const discountPercent = parseFloat(document.getElementById('planDiscountPercent').value) || 0;
+      const fixedCredit = parseFloat(document.getElementById('planBillCredit').value) || 0;
+      const includesGST = document.getElementById('planTaxToggle').checked;
+
+      if (currentModalCategories.length === 0) {
+        currentModalCategories.push({
+          id: `cat_gen_${Date.now()}`,
+          name: 'General Usage',
+          tiers: [{ name: 'Standard Rate', thresholdPerDay: null, rate: 30.0 }]
+        });
+      }
+
+      const newPlan = {
+        id,
+        provider,
+        name,
+        energyType,
+        supplyCharge,
+        supplyUnit,
+        solarFiT: 0,
+        discountPercent,
+        fixedCredit,
+        includesGST,
+        categories: JSON.parse(JSON.stringify(currentModalCategories))
+      };
+
+      const existingIdx = appState.plans.findIndex(p => p.id === id);
+      if (existingIdx >= 0) {
+        appState.plans[existingIdx] = newPlan;
+      } else {
+        appState.plans.push(newPlan);
+      }
+
+      saveAllState();
+      closePlanModal();
+      renderPlansList();
+      showToast('Plan saved with hierarchical tariffs');
+    }
+
+    function syncCalculatorView() {
+      const select = document.getElementById('calcProviderSelect');
+      select.innerHTML = appState.plans.map(p => `
+        <option value="${p.id}" ${p.id === appState.calc.planId ? 'selected' : ''}>
+          ${escapeHtml(p.provider)} - ${escapeHtml(p.name)}
+        </option>
+      `).join('');
+
+      document.getElementById('calcBillingDays').value = appState.calc.billingDays || 60;
+
+      updateCalculatorDynamicInputs();
+      recalculateAndRenderLedger();
+    }
+
+    function updateCalculatorDynamicInputs() {
+      const activePlan = appState.plans.find(p => p.id === appState.calc.planId);
+      const container = document.getElementById('dynamicUsageInputsContainer');
+      const badge = document.getElementById('activePlanTypeBadge');
+
+      if (!activePlan) {
+        container.innerHTML = '<p style="color:var(--text-muted);">Please create or select an energy plan.</p>';
+        return;
+      }
+
+      const unit = activePlan.energyType || 'kWh';
+      const categories = activePlan.categories || [];
+
+      badge.className = 'badge-chip chip-tou';
+      badge.textContent = `${categories.length} Period${categories.length > 1 ? 's' : ''} (${unit})`;
+
+      if (categories.length === 1) {
+        const cat = categories[0];
+        const initialVal = appState.calc.categoryUsages?.[cat.id] ?? appState.calc.totalUsage ?? 1500;
+        container.innerHTML = `
+          <div class="form-group">
+            <label class="form-label" for="calcCat_${cat.id}">${escapeHtml(cat.name)}</label>
+            <div class="input-affix-wrapper has-suffix">
+              <input type="number" id="calcCat_${cat.id}" data-catid="${cat.id}" min="0" step="any" value="${initialVal}" inputmode="decimal">
+              <span class="input-affix suffix">${unit}</span>
+            </div>
+            <span style="font-size:0.72rem; color:var(--text-muted); margin-top:3px; display:block;">
+              Contains ${cat.tiers?.length || 1} stepped tier(s)
+            </span>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div style="margin-bottom:8px;">
+            <label class="form-label" style="margin-bottom:2px;">Period Consumption Breakdown</label>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Enter consumption for each tariff period</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${categories.map((cat, idx) => {
+              const defaultVal = appState.calc.categoryUsages?.[cat.id] ?? (idx === 0 ? 2000 : 1500);
+              return `
+                <div class="form-group" style="margin-bottom:4px;">
+                  <label class="form-label" style="font-size:0.75rem;" for="calcCat_${cat.id}">${escapeHtml(cat.name)}</label>
+                  <div class="input-affix-wrapper has-suffix">
+                    <input type="number" id="calcCat_${cat.id}" data-catid="${cat.id}" min="0" step="any" value="${defaultVal}" inputmode="decimal">
+                    <span class="input-affix suffix">${unit}</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+
+      container.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', () => {
+          readCalculatorInputs();
+          recalculateAndRenderLedger();
+        });
+      });
+    }
+
+    function readCalculatorInputs() {
+      appState.calc.billingDays = Math.max(1, parseFloat(document.getElementById('calcBillingDays').value) || 1);
+
+      if (!appState.calc.categoryUsages) appState.calc.categoryUsages = {};
+
+      let total = 0;
+      document.querySelectorAll('#dynamicUsageInputsContainer input[data-catid]').forEach(input => {
+        const catId = input.dataset.catid;
+        const val = Math.max(0, parseFloat(input.value) || 0);
+        appState.calc.categoryUsages[catId] = val;
+        total += val;
+      });
+
+      appState.calc.totalUsage = total;
+      saveAllState();
+    }
+
+    function recalculateAndRenderLedger() {
+      const activePlan = appState.plans.find(p => p.id === appState.calc.planId);
+      if (!activePlan) return;
+
+      const bill = calculateBill(activePlan, appState.calc);
+      if (!bill) return;
+
+      const dailySupplyRate = activePlan.supplyUnit === 'dollars' ? Number(activePlan.supplyCharge) : Number(activePlan.supplyCharge) / 100;
+      document.getElementById('calcDailyRateLabel').textContent = `Daily Rate: $${dailySupplyRate.toFixed(4)}/d`;
+
+      const tbody = document.getElementById('ledgerTableBody');
+      tbody.innerHTML = bill.lineItems.map(item => `
+        <tr>
+          <td>
+            <strong>${escapeHtml(item.desc)}</strong>
+            <span class="ledger-row-detail">${escapeHtml(item.detail)}</span>
+          </td>
+          <td style="text-align:right;">${item.units} <span style="font-size:0.75rem; color:var(--text-dim);">${item.unitLabel}</span></td>
+          <td style="text-align:right;">${item.rateDisplay}</td>
+          <td style="text-align:right;" class="${item.isCredit ? 'ledger-credit' : 'ledger-debit'}">
+            ${item.isCredit ? '-' : ''}$${Math.abs(item.amount).toFixed(2)}
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('summaryUsageExTax').textContent = `$${bill.totalUsageCost.toFixed(2)}`;
+      document.getElementById('summarySupplyCharges').textContent = `$${bill.totalSupplyCost.toFixed(2)}`;
+      document.getElementById('summaryTotalCredits').textContent = `-$${bill.totalCredits.toFixed(2)}`;
+      document.getElementById('summaryTaxAmount').textContent = `$${bill.taxAmount.toFixed(2)}`;
+      document.getElementById('summaryTaxPercentLabel').textContent = activePlan.includesGST ? 'Included 1/11th' : '+10%';
+      document.getElementById('summaryTotalPayable').textContent = `$${bill.totalPayable.toFixed(2)}`;
+      document.getElementById('summaryCostPerDay').textContent = `$${bill.dailyCost.toFixed(2)} / day`;
+    }
+
+    function closePlanModal() {
+      document.getElementById('planModal').classList.remove('active');
+    }
+
+    function handleSupplyUnitChange() {
+      const unit = document.getElementById('planSupplyUnit').value;
+      const label = document.getElementById('supplyUnitLabel');
+      if (label) {
+        label.textContent = unit === 'cents' ? '¢/day' : '$/day';
+      }
+    }
+
+    function editPlan(id) {
+      const plan = appState.plans.find(p => p.id === id);
+      if (plan) openPlanModal(plan);
+    }
+
+    async function deletePlan(id) {
+      const confirmed = await askConfirmation('Delete Plan?', 'Are you sure you want to remove this energy plan profile?');
+      if (!confirmed) return;
+
+      appState.plans = appState.plans.filter(p => p.id !== id);
+      if (appState.calc.planId === id && appState.plans.length > 0) {
+        appState.calc.planId = appState.plans[0].id;
+      }
+      saveAllState();
+      renderPlansList();
+      showToast('Plan deleted');
+    }
+
+    function selectAndCalculate(id) {
+      appState.calc.planId = id;
+      saveAllState();
+      switchTab('calculator');
+    }
+
+    function selectAndCompare(id) {
+      appState.calc.comparePlanAId = id;
+      saveAllState();
+      switchTab('compare');
+    }
+
+    document.getElementById('addNewPlanBtn').addEventListener('click', () => {
+      openPlanModal();
+    });
+
+    function setBillingDays(days) {
+      document.getElementById('calcBillingDays').value = days;
+      document.querySelectorAll('#view-calculator .pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.includes(`${days}d`));
+      });
+      readCalculatorInputs();
+      recalculateAndRenderLedger();
+    }
+
+    document.getElementById('calcProviderSelect').addEventListener('change', (e) => {
+      appState.calc.planId = e.target.value;
+      saveAllState();
+      updateCalculatorDynamicInputs();
+      recalculateAndRenderLedger();
+    });
+
+    document.getElementById('calcBillingDays').addEventListener('input', () => {
+      readCalculatorInputs();
+      recalculateAndRenderLedger();
+    });
+
+    function syncCompareView() {
+      const selectA = document.getElementById('comparePlanA');
+      const selectB = document.getElementById('comparePlanB');
+
+      const planOptions = appState.plans.map(p => `
+        <option value="${p.id}">${escapeHtml(p.provider)} - ${escapeHtml(p.name)}</option>
+      `).join('');
+
+      selectA.innerHTML = planOptions;
+      selectB.innerHTML = planOptions;
+
+      selectA.value = appState.calc.comparePlanAId;
+      selectB.value = appState.calc.comparePlanBId;
+
+      // Sync comparison inputs with app state
+      document.getElementById('compareBillingDays').value = appState.calc.billingDays || 90;
+      document.getElementById('compareTotalUsage').value = appState.calc.totalUsage || 1400;
+      document.getElementById('comparePeakUsage').value = appState.calc.peakUsage || 700;
+      document.getElementById('compareShoulderUsage').value = appState.calc.shoulderUsage || 250;
+      document.getElementById('compareOffPeakUsage').value = appState.calc.offPeakUsage || 450;
+
+      attachCompareInputListeners();
+      recalculateAndRenderComparison();
+    }
+
+    function applyUsagePreset(level) {
+      const days = parseFloat(document.getElementById('compareBillingDays').value) || 90;
+      let dailyUnits = 15.5; // medium default
+
+      if (level === 'low') dailyUnits = 10;
+      else if (level === 'med') dailyUnits = 15.5;
+      else if (level === 'high') dailyUnits = 24.5;
+
+      const total = Math.round(dailyUnits * days);
+      document.getElementById('compareTotalUsage').value = total;
+
+      // Distribute 50% Peak, 18% Shoulder, 32% Off-Peak
+      const peak = Math.round(total * 0.50);
+      const shoulder = Math.round(total * 0.18);
+      const offPeak = total - peak - shoulder;
+
+      document.getElementById('comparePeakUsage').value = peak;
+      document.getElementById('compareShoulderUsage').value = shoulder;
+      document.getElementById('compareOffPeakUsage').value = offPeak;
+
+      readCompareInputs();
+      recalculateAndRenderComparison();
+    }
+
+    function readCompareInputs() {
+      appState.calc.billingDays = Math.max(1, parseFloat(document.getElementById('compareBillingDays').value) || 1);
+      appState.calc.totalUsage = Math.max(0, parseFloat(document.getElementById('compareTotalUsage').value) || 0);
+      appState.calc.peakUsage = Math.max(0, parseFloat(document.getElementById('comparePeakUsage').value) || 0);
+      appState.calc.shoulderUsage = Math.max(0, parseFloat(document.getElementById('compareShoulderUsage').value) || 0);
+      appState.calc.offPeakUsage = Math.max(0, parseFloat(document.getElementById('compareOffPeakUsage').value) || 0);
+
+      saveAllState();
+    }
+
+    let compareListenersAttached = false;
+    function attachCompareInputListeners() {
+      if (compareListenersAttached) return;
+      compareListenersAttached = true;
+
+      const daysInput = document.getElementById('compareBillingDays');
+      const totalInput = document.getElementById('compareTotalUsage');
+      const peakInput = document.getElementById('comparePeakUsage');
+      const shoulderInput = document.getElementById('compareShoulderUsage');
+      const offPeakInput = document.getElementById('compareOffPeakUsage');
+
+      daysInput.addEventListener('input', () => {
+        readCompareInputs();
+        recalculateAndRenderComparison();
+      });
+
+      totalInput.addEventListener('input', () => {
+        const total = Math.max(0, parseFloat(totalInput.value) || 0);
+        // Automatically sync TOU split proportionally
+        const peak = Math.round(total * 0.50);
+        const shoulder = Math.round(total * 0.18);
+        const offPeak = Math.max(0, total - peak - shoulder);
+        peakInput.value = peak;
+        shoulderInput.value = shoulder;
+        offPeakInput.value = offPeak;
+        readCompareInputs();
+        recalculateAndRenderComparison();
+      });
+
+      const onTouPartChange = () => {
+        const p = parseFloat(peakInput.value) || 0;
+        const s = parseFloat(shoulderInput.value) || 0;
+        const o = parseFloat(offPeakInput.value) || 0;
+        totalInput.value = p + s + o;
+        readCompareInputs();
+        recalculateAndRenderComparison();
+      };
+
+      peakInput.addEventListener('input', onTouPartChange);
+      shoulderInput.addEventListener('input', onTouPartChange);
+      offPeakInput.addEventListener('input', onTouPartChange);
+    }
+
+    document.getElementById('comparePlanA').addEventListener('change', (e) => {
+      appState.calc.comparePlanAId = e.target.value;
+      saveAllState();
+      recalculateAndRenderComparison();
+    });
+
+    document.getElementById('comparePlanB').addEventListener('change', (e) => {
+      appState.calc.comparePlanBId = e.target.value;
+      saveAllState();
+      recalculateAndRenderComparison();
+    });
+
+    function recalculateAndRenderComparison() {
+      const planA = appState.plans.find(p => p.id === appState.calc.comparePlanAId);
+      const planB = appState.plans.find(p => p.id === appState.calc.comparePlanBId);
+
+      if (!planA || !planB) return;
+
+      const unitA = planA.energyType || 'kWh';
+      document.getElementById('compareUnitLabel').textContent = unitA;
+
+      // Check if either plan has multiple categories
+      const hasMultiCat = (planA.categories && planA.categories.length > 1) || (planB.categories && planB.categories.length > 1);
+      const touWrap = document.getElementById('compareTouSplitWrap');
+      if (touWrap) {
+        touWrap.style.display = hasMultiCat ? 'block' : 'none';
+      }
+
+      // Calculate both plans under exact same normalized baseline
+      const billA = calculateBill(planA, appState.calc);
+      const billB = calculateBill(planB, appState.calc);
+
+      document.getElementById('thPlanAName').textContent = `${planA.provider}`;
+      document.getElementById('thPlanBName').textContent = `${planB.provider}`;
+
+      const costA = billA.totalPayable;
+      const costB = billB.totalPayable;
+
+      // Differential metrics
+      const diffTotal = costA - costB;
+      const diffSupply = billA.totalSupplyCost - billB.totalSupplyCost;
+      const diffUsage = billA.totalUsageCost - billB.totalUsageCost;
+      const diffDiscounts = (billA.totalCredits) - (billB.totalCredits);
+
+      // Winner Determination
+      const winnerNameElem = document.getElementById('compareWinnerName');
+      const winnerSavingsElem = document.getElementById('compareSavingsText');
+
+      if (Math.abs(diffTotal) < 0.05) {
+        winnerNameElem.textContent = "Tie (Equal Pricing)";
+        winnerSavingsElem.textContent = `Both plans produce identical totals ($${costA.toFixed(2)}) for ${appState.calc.totalUsage} ${unitA}`;
+      } else if (costA < costB) {
+        const savings = costB - costA;
+        const pct = (savings / costB) * 100;
+        winnerNameElem.textContent = `${planA.provider} is cheaper`;
+        winnerSavingsElem.textContent = `Saves $${savings.toFixed(2)} (${pct.toFixed(1)}%) based on ${appState.calc.totalUsage} ${unitA} over ${appState.calc.billingDays} days`;
+      } else {
+        const savings = costA - costB;
+        const pct = (savings / costA) * 100;
+        winnerNameElem.textContent = `${planB.provider} is cheaper`;
+        winnerSavingsElem.textContent = `Saves $${savings.toFixed(2)} (${pct.toFixed(1)}%) based on ${appState.calc.totalUsage} ${unitA} over ${appState.calc.billingDays} days`;
+      }
+
+      // Visual Bar Proportions
+      const sum = costA + costB;
+      const pctA = sum > 0 ? (costA / sum) * 100 : 50;
+      const pctB = 100 - pctA;
+
+      document.getElementById('chartLabelA').textContent = `${planA.provider} ($${costA.toFixed(2)})`;
+      document.getElementById('chartLabelB').textContent = `${planB.provider} ($${costB.toFixed(2)})`;
+      document.getElementById('chartBarA').style.width = `${pctA}%`;
+      document.getElementById('chartBarB').style.width = `${pctB}%`;
+
+      // Metric Delta Boxes
+      document.getElementById('diffSupply').textContent = `${diffSupply >= 0 ? '+' : ''}$${diffSupply.toFixed(2)}`;
+      document.getElementById('diffUsage').textContent = `${diffUsage >= 0 ? '+' : ''}$${diffUsage.toFixed(2)}`;
+      document.getElementById('diffDiscounts').textContent = `${diffDiscounts >= 0 ? '+' : ''}$${diffDiscounts.toFixed(2)}`;
+      document.getElementById('diffTotal').textContent = `${diffTotal >= 0 ? '+' : ''}$${diffTotal.toFixed(2)}`;
+
+      // Detailed comparison table rows with explicit multiplication formulas
+      const tbody = document.getElementById('compareTableBody');
+      const dailyRateA = planA.supplyUnit === 'dollars' ? Number(planA.supplyCharge) : Number(planA.supplyCharge) / 100;
+      const dailyRateB = planB.supplyUnit === 'dollars' ? Number(planB.supplyCharge) : Number(planB.supplyCharge) / 100;
+
+      tbody.innerHTML = `
+        <tr>
+          <td>
+            <strong>Daily Supply Charge</strong>
+            <span class="ledger-row-detail">${appState.calc.billingDays} days</span>
+          </td>
+          <td style="text-align:right;">
+            $${billA.totalSupplyCost.toFixed(2)}
+            <span class="ledger-row-detail">@ $${dailyRateA.toFixed(3)}/d</span>
+          </td>
+          <td style="text-align:right;">
+            $${billB.totalSupplyCost.toFixed(2)}
+            <span class="ledger-row-detail">@ $${dailyRateB.toFixed(3)}/d</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Energy Consumption</strong>
+            <span class="ledger-row-detail">${appState.calc.totalUsage} ${unitA} total</span>
+          </td>
+          <td style="text-align:right;">
+            $${billA.totalUsageCost.toFixed(2)}
+            <span class="ledger-row-detail">${planA.categories.length} tariff period(s)</span>
+          </td>
+          <td style="text-align:right;">
+            $${billB.totalUsageCost.toFixed(2)}
+            <span class="ledger-row-detail">${planB.categories.length} tariff period(s)</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Discounts & Bill Credits</strong>
+            <span class="ledger-row-detail">Promotions & usage concessions</span>
+          </td>
+          <td style="text-align:right;" class="ledger-credit">-$${billA.totalCredits.toFixed(2)}</td>
+          <td style="text-align:right;" class="ledger-credit">-$${billB.totalCredits.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Tax Component (GST)</strong>
+            <span class="ledger-row-detail">${planA.includesGST ? 'Included (1/11th)' : 'Added (10%)'}</span>
+          </td>
+          <td style="text-align:right;">$${billA.taxAmount.toFixed(2)}</td>
+          <td style="text-align:right;">$${billB.taxAmount.toFixed(2)}</td>
+        </tr>
+        <tr style="font-weight:700; background:var(--bg-surface-elevated);">
+          <td>Estimated Total Bill</td>
+          <td style="text-align:right; color:var(--primary); font-size:1.05rem;">$${costA.toFixed(2)}</td>
+          <td style="text-align:right; color:var(--warning); font-size:1.05rem;">$${costB.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td>Daily Cost Average</td>
+          <td style="text-align:right;">$${billA.dailyCost.toFixed(2)}/day</td>
+          <td style="text-align:right;">$${billB.dailyCost.toFixed(2)}/day</td>
+        </tr>
+      `;
+    }
+
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+
+    settingsBtn.addEventListener('click', () => {
+      settingsModal.classList.add('active');
+    });
+
+    function closeSettingsModal() {
+      settingsModal.classList.remove('active');
+    }
+
+    async function promptResetDefaults() {
+      const confirm = await askConfirmation(
+        'Reset to Defaults?',
+        'This will replace custom plans with pre-configured Victorian and Australian benchmark tariffs.',
+        'Reset Data'
+      );
+      if (confirm) {
+        appState.plans = JSON.parse(JSON.stringify(DEFAULT_PLANS));
+        appState.calc = { ...DEFAULT_CALC_INPUTS };
+        saveAllState();
+        closeSettingsModal();
+        renderPlansList();
+        syncCalculatorView();
+        showToast('Default plans restored');
+      }
+    }
+
+    async function promptClearAllData() {
+      const confirm = await askConfirmation(
+        'Clear All Saved Data?',
+        'All custom energy plans and calculation inputs will be wiped permanently.',
+        'Clear All'
+      );
+      if (confirm) {
+        localStorage.removeItem(STORAGE_KEY_PLANS);
+        localStorage.removeItem(STORAGE_KEY_CALC);
+        appState.plans = [];
+        appState.calc = { ...DEFAULT_CALC_INPUTS };
+        saveAllState();
+        closeSettingsModal();
+        renderPlansList();
+        syncCalculatorView();
+        showToast('All data cleared');
+      }
+    }
+
+    /* Helper: Escape HTML string */
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initAppState();
+      renderPlansList();
+      syncCalculatorView();
+    });
+  </script>
+</body>
+</html>
